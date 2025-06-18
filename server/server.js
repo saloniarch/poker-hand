@@ -10,12 +10,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Test endpoint
+// Just to test the connection :) 
 app.get('/', (req, res) => {
   res.send('Server is working!');
 });
 
-// Poker hand endpoint
 app.get('/api/hand/new', (req, res) => {
     const hand = dealHand();
     //const analysis = analyzedHand(hand);
