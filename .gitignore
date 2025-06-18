@@ -1,0 +1,18 @@
+# Root .gitignore - applies to entire project
+**/.DS_Store
+**/.env
+**/.env.local
+**/node_modules/
+dist/
+build/
+coverage/
+*.log
+.idea/
+.vscode/
+*.tmp
+*.bak
+*.swp
+
+# Docker
+docker-compose.override.yml
+*.dockerfile

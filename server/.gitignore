@@ -1,0 +1,24 @@
+# Server .gitignore
+/node_modules/
+.env
+.env.local
+*.db
+*.db-journal
+*.log
+*.pid
+*.seed
+*.tgz
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories
+.idea
+.vscode
