@@ -6,7 +6,7 @@ import { Deck } from './Components/Deck';
 
 function App() {
 
-  const { dealNewHand, resetDeck} = api();
+  const { dealNewHand, resetDeck, getWinner} = api();
 
 
   const [hand, setHand] = useState(null);
@@ -16,6 +16,10 @@ function App() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [firstRound, setFirstRound] = useState(true);
+
+  const [handsToCompare, setHandsToCompare] = useState([]);
+  const [winnerResult, setWinnerResult] = useState(null);
 
 
   const fetchNewHand = async () => {
@@ -25,23 +29,41 @@ function App() {
       const response = await dealNewHand();
       console.log("Api response.....", response);
 
-      if (response && !response?.error) {
-        const { hand, analysis } = response ?? {};
-
-        setHand(hand);
-        setAnalysis(analysis);
-        setHistory(prev => [response, ...prev.slice(0, 9)]);
-
-      } else {
+      if (response?.error) {
         setError(response.error);
-        } 
-      } catch (error) {
-      setError("Request failed");
-      console.error("Error dealing new hand:", error);
-    } finally {
-      setIsLoading(false);
+      } else if (response) {
+        setHand(response.hand);
+        setAnalysis(response.analysis);
+        setHandsToCompare(prev => [...prev, response.hand]);
+        setHistory(prev => [response, ...prev.slice(0, 9)]);
+        setFirstRound(false);
+      }
+    } catch (error) {
+    setError("Failed dealing hand");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const compareHands = async () => {
+  if (handsToCompare.length < 2) {
+    setError("At least two hands for comparison");
+    return;
+  }
+
+  setIsLoading(true);
+  setError(null);
+  setWinnerResult(null);
+
+  try{
+    const response = await getWinner(handsToCompare);
+    if (response?.error) {
+      setError(response.error);
+    } else {
+      setWinnerResult(response);
     }
-  };
+  } finally { setIsLoading(false);}
+};
 
   const resetGame = async () => {
     setIsLoading(true);
@@ -49,20 +71,42 @@ function App() {
     setHand(null);
     setAnalysis(null);
     setHistory([]);
+    setHandsToCompare([]);
+    setWinnerResult(null);
+    setShowHistory(false);
+    setFirstRound(true);
     setIsLoading(false);
+
   };
 
 
   return (
     <>
       <Deck />
-      <button onClick={fetchNewHand}>Deal New Hand</button>
-      <button onClick={resetGame}> Reset Game</button>
-      
+      <div className="controls">
+        <button onClick={fetchNewHand} disabled={isLoading}>
+          {isLoading ? "Dealing..." : firstRound ? "Start Game" : "Deal New Hand"}
+      </button>
+        
+        <button onClick={compareHands} disabled={handsToCompare.length < 2 || isLoading}>
+          Compare Hands
+        </button>
+
+        {winnerResult && (
+          <div className="results">
+            <div className="winner">
+              <h3>Winning Hand:</h3>
+              <comparison-display hand={winnerResult.winner.hand} />
+              <p>{winnerResult.winner.analysis}</p>
+            </div>
+          </div>
+        )}
+      <button onClick={resetGame} disabled={isLoading}> Reset Game</button>
+      </div>
 
       {error && (
         <div className ="error"> 
-          <p> An error occurred :</p>
+          <p>Error {error}</p>
           <p> {error?.toString()} </p>
           <button onClick={() => setError(null)}> Close </button>
         </div>
@@ -70,7 +114,7 @@ function App() {
 
       {isLoading && <p> LOADING... </p>}
       
-      {hand && (
+      {hand && analysis && (
         <div className="hand-container">
           <div className="current-hand">
           {hand.map((card, index) => (
@@ -78,29 +122,23 @@ function App() {
           ))}
           </div>
         <div className='hand-analysis'>
-          <p> This hand is: <strong>{analysis}</strong></p>
+          <p><strong>{analysis.label}!</strong></p>
           </div>
         </div>
       )}
 
-       {history.length > 0 && (
-        <div style={{ marginTop: '20px' }}>
-          <button onClick={() => setShowHistory(prev => !prev)}>
-            {showHistory ? "Hide History" : "Show History"}
-          </button>
-        </div>
-      )}
-
-
+        <button onClick={() => setShowHistory(!showHistory)}>
+    {showHistory ? "Hide History" : "Show History"}
+  </button> 
       {showHistory && (
         <div className='history'>
           <h3>Recent Hands:</h3>
-          {history.map(item => (
-            <div key={item.id} className='history-item'>
-              {item.hand.map((card, j) => (
-                <Card key={j} cardCode={card} small />
+          {history.map(hand => (
+            <div key={`history-${hand.id}`} className='history-hand'>
+              {hand.hand.map((card, j) => (
+                <Card key={`${hand.id}-${card}`} cardCode={card} small />
               ))}
-              <button disabled>{item.analysis}</button>
+              <span>{hand.analysis.label}</span>
             </div>
           ))}
         </div>

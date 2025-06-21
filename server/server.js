@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 
-const { createDeck, dealHand, resetDeck } = require("./DeckUtils");
+const { dealHand, resetDeck } = require("./DeckUtils");
 const { analyzeHand } = require("./RankingUtils");
 
 const app = express();
@@ -10,11 +10,6 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = 3001;
-
-// Testing to see if server is running
-app.get("/", (req, res) => {
-  res.send("Server is working! " + Date.now());
-});
 
 let handsHistory = [];
 
@@ -31,6 +26,7 @@ app.get("/api/hand/new", async (req, res) => {
   };
 
   handsHistory.push(handLog);
+
   res.json(handLog);
 });
 
@@ -39,6 +35,20 @@ app.get("/api/history", (req, res) => {
   const recentHands = handsHistory.slice(-10).reverse();
 
   res.json(recentHands);
+});
+
+app.post("/api/compare", (req, res) => {
+  const { hands } = req.body;
+
+  const results = hands.map((hand) => {
+    const analysis = analyzeHand(hand);
+    return { hand, analysis: analysis.label, rank: analysis.rank };
+  });
+
+  results.sort((a, b) => b.rank - a.rank); //Could have used if statement if only 2 players, faster
+  const winner = results[0];
+
+  res.json({ winner, allHands: results });
 });
 
 // Get current deck from db
@@ -52,34 +62,10 @@ app.get("/deck", (req, res) => {
   });
 });
 
-app.delete("/deck", (req, res) => {
-  db.run("DELETE FROM deck", [], function (err) {
-    if (err) {
-      console.error("Error deleting deck :/", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json({ message: "Deck cleared", changes: this.changes });
-  });
-});
-
 // Reset deck
 app.post("/deck/reset", async (req, res) => {
   const newDeck = await resetDeck();
   res.json({ message: "Deck reset", cards: newDeck });
-});
-
-// Respond only once after both tables are dropped
-app.get("/api/reset", (req, res) => {
-  db.serialize(() => {
-    db.run("DROP TABLE IF EXISTS deck");
-    db.run("DROP TABLE IF EXISTS hands", (err) => {
-      if (err) {
-        console.error("Reset error (hands)", err);
-        return res.status(500).send("Error resetting hands table");
-      }
-      res.send("Database reset successful");
-    });
-  });
 });
 
 app.listen(PORT, () => {

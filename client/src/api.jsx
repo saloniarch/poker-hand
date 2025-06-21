@@ -13,22 +13,16 @@ import axios from 'axios';
             }
         };
 
-        const post = async (endpoint) => {
+        const post = async (endpoint, data = {}) => {
             try {
-                const response = await axios.post(`${API_URL}${endpoint}`);
+                const response = await axios.post(`${API_URL}${endpoint}`, data, {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
                 return response.data;
             }catch (error){
                 console.error(`POST ${endpoint} failed: `, error);
-                return {error};
-            }
-        };
-
-         const del = async (endpoint) => {
-            try {
-                const response = await axios.delete(`${API_URL}${endpoint}`);
-                return response.data;
-            }catch (error){
-                console.error(`DELETE ${endpoint} failed: `, error);
                 return {error};
             }
         };
@@ -37,7 +31,7 @@ import axios from 'axios';
     dealNewHand: () => get("/api/hand/new"),
     getHistory: () => get("/api/history"),
     getDeck: () => get("/deck"),
-    deleteDeck: () => del("/deck"),
     resetDeck: () => post("/deck/reset"),
+    getWinner: (hands) => post("/api/compare", {hands})
    };
     };

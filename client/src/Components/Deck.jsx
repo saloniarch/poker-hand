@@ -3,25 +3,24 @@ import { useState } from "react";
 
 export function Deck({}) {
 
-    const {getDeck} = api();
-  const [deck, setDeck] = useState(null);
+  const {getDeck} = api();
+  const [remainingCards, setRemaining] = useState(null);
 
   const handleGetDeck = async () => {
-    let response;
     try {
-      response = await getDeck();
-      setDeck(response);
+      const response = await getDeck();
+      setRemaining(response.length);
     } catch (error) {
       console.error("Error while fetching deck....", error);
-      setDeck(null);
+      setRemaining(null);
     }
   };
 
     return (
-        <div className={"card"} >
-            <button onClick={handleGetDeck} style={{padding: 0, border: "none", }}>
-              {deck ? deck.length : "N/A"}</button>
-            <div>{"Cards Remaining"}</div>
+        <div className={"deck-display"} >
+            <button onClick={handleGetDeck} className="deck-button">
+              {remainingCards !== null ? remainingCards : "?"}</button>
+            <div>{"Cards Left"}</div>
         </div>
     )
 } 

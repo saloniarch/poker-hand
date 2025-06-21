@@ -15,21 +15,20 @@ function analyzeHand(hand) {
   console.log(valueCounts);
 
   const counts = Object.values(valueCounts);
-  const hasTwo = counts.includes(2);
+  const pairs = counts.filter((count) => count === 2).length;
+  const hasTwo = pairs >= 1;
   const hasThree = counts.includes(3);
   const hasFour = counts.includes(4);
 
-  if (isFlush && isStraight) return "Strrrraight Flush!!";
-  if (hasFour) return "Four of a Kind!";
-  if (hasThree && hasTwo) return "Full House!";
-  if (isFlush) return "Flush!";
-  if (isStraight) return "Straight!";
-  if (hasThree) return "Three of a Kind!";
-  if (counts.filter((valueCount) => valueCount === 2).length === 2)
-    return "Two Pairs";
-  if (hasTwo) return "One Pair";
-
-  return "High Card";
+  if (isFlush && isStraight) return { rank: 1, label: "Straight Flush" };
+  if (hasFour) return { rank: 2, label: "Four of a Kind" };
+  if (hasThree && hasTwo) return { rank: 3, label: "Full House" };
+  if (isFlush) return { rank: 4, label: "Flush" };
+  if (isStraight) return { rank: 5, label: "Straight" };
+  if (hasThree) return { rank: 6, label: "Three of a Kind" };
+  if (pairs === 2) return { rank: 7, label: "Two Pair" };
+  if (hasTwo) return { rank: 8, label: "One Pair" };
+  return { rank: 9, label: "High Card" };
 }
 
 function checkForFlush(hand) {
@@ -66,19 +65,19 @@ function checkForStraight(hand) {
   ];
 
   const values = hand.map((card) => card[0]);
+  let positions = values
+    .map((val) => cardOrder.indexOf(val))
+    .sort((a, b) => a - b);
 
-  const positions = values.map((val) => cardOrder.indexOf(val));
-  console.log("sorted positions.....", positions);
+  // for wheel a2345
+  const isWheel = ["A", "2", "3", "4", "5"].every((v) => values.includes(v));
+  if (isWheel) return true;
 
-  positions.sort((a, b) => a - b);
-
+  // Normal straight
   for (let i = 1; i < positions.length; i++) {
-    if (positions[i] !== positions[i - 1] + 1) {
-      return false;
-    }
+    if (positions[i] !== positions[i - 1] + 1) return false;
   }
-
   return true;
 }
 
-module.exports = { analyzeHand, checkForFlush, checkForStraight };
+module.exports = { analyzeHand };
