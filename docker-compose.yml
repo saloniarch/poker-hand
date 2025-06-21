@@ -4,15 +4,16 @@ services:
   backend:
     build: ./server
     ports:
-      - "3001:3001"
+      - "3002:3001"
     volumes:
-      - ./backend:/app
+      - ./server:/app:cached
+      - /app/node_modules
     environment:
       - NODE_ENV=development
 
   frontend:
-    build: ./client 
+    build: ./client
     ports:
-      - "3000:80"
+      - "3001:80"
     depends_on:
       - backend
