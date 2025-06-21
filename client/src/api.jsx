@@ -13,7 +13,7 @@ import axios from 'axios';
             }
         };
 
-        const post = async (endpoint, data = {}) => {
+        const post = async (endpoint, data) => {
             try {
                 const response = await axios.post(`${API_URL}${endpoint}`, data, {
                     headers: {
@@ -34,4 +34,4 @@ import axios from 'axios';
     resetDeck: () => post("/deck/reset"),
     getWinner: (hands) => post("/api/compare", {hands})
    };
-    };
+};

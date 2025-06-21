@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import Card from './Card';
+import Card from './Components/Card';
 import './App.css';
 import { api } from './api';
 import { Deck } from './Components/Deck';
+import { HandDisplay } from './Components/Hand';
 
 function App() {
 
   const { dealNewHand, resetDeck, getWinner} = api();
 
 
-  const [hand, setHand] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
+  const [currentHandData, setCurrentHandData] = useState(null);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -24,6 +24,8 @@ function App() {
 
   const fetchNewHand = async () => {
     setIsLoading(true);
+    setError(null);
+    setWinnerResult(null);
 
     try {
       const response = await dealNewHand();
@@ -32,8 +34,7 @@ function App() {
       if (response?.error) {
         setError(response.error);
       } else if (response) {
-        setHand(response.hand);
-        setAnalysis(response.analysis);
+        setCurrentHandData({hand: response.hand, analysis: response.analysis});
         setHandsToCompare(prev => [...prev, response.hand]);
         setHistory(prev => [response, ...prev.slice(0, 9)]);
         setFirstRound(false);
@@ -50,11 +51,9 @@ const compareHands = async () => {
     setError("At least two hands for comparison");
     return;
   }
-
   setIsLoading(true);
   setError(null);
   setWinnerResult(null);
-
   try{
     const response = await getWinner(handsToCompare);
     if (response?.error) {
@@ -62,21 +61,20 @@ const compareHands = async () => {
     } else {
       setWinnerResult(response);
     }
-  } finally { setIsLoading(false);}
+  } finally { setIsLoading(false);
+  }
 };
 
   const resetGame = async () => {
     setIsLoading(true);
     await resetDeck();
-    setHand(null);
-    setAnalysis(null);
+    setCurrentHandData(null);
     setHistory([]);
     setHandsToCompare([]);
     setWinnerResult(null);
     setShowHistory(false);
     setFirstRound(true);
     setIsLoading(false);
-
   };
 
 
@@ -94,14 +92,17 @@ const compareHands = async () => {
 
         {winnerResult && (
           <div className="results">
-            <div className="winner">
-              <h3>Winning Hand:</h3>
-              <comparison-display hand={winnerResult.winner.hand} />
-              <p>{winnerResult.winner.analysis}</p>
-            </div>
+            <h3>{winnerResult.isTie ? "It's a Tie!" : "Winning Hand:"}</h3>
+            {(winnerResult.isTie ? winnerResult.winners : [winnerResult.winner]).map((w, i) => (
+              <div key={i}>
+                <HandDisplay hand={w.hand} />
+                <p>{w.analysis}</p>
+              </div>
+            ))}
           </div>
         )}
-      <button onClick={resetGame} disabled={isLoading}> Reset Game</button>
+
+        <button onClick={resetGame} disabled={isLoading || firstRound}> Reset Game</button>
       </div>
 
       {error && (
@@ -114,22 +115,19 @@ const compareHands = async () => {
 
       {isLoading && <p> LOADING... </p>}
       
-      {hand && analysis && (
+      {currentHandData && (
         <div className="hand-container">
-          <div className="current-hand">
-          {hand.map((card, index) => (
-            <Card key={index} cardCode={card} />
-          ))}
+          <HandDisplay hand ={currentHandData.hand} />
+          <div className='hand-analysis'>
+            <p><strong>{currentHandData.analysis.label}!</strong></p>
+            </div>
           </div>
-        <div className='hand-analysis'>
-          <p><strong>{analysis.label}!</strong></p>
-          </div>
-        </div>
-      )}
+        )}
 
-        <button onClick={() => setShowHistory(!showHistory)}>
-    {showHistory ? "Hide History" : "Show History"}
-  </button> 
+        <button onClick={() => setShowHistory(!showHistory)} disabled={firstRound}>
+          {showHistory ? "Hide History" : "Show History"}
+        </button>
+
       {showHistory && (
         <div className='history'>
           <h3>Recent Hands:</h3>

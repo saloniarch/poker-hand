@@ -45,10 +45,19 @@ app.post("/api/compare", (req, res) => {
     return { hand, analysis: analysis.label, rank: analysis.rank };
   });
 
-  results.sort((a, b) => b.rank - a.rank); //Could have used if statement if only 2 players, faster
-  const winner = results[0];
+  function findWinner(results) {
+    results.sort((a, b) => a.rank - b.rank);
+    const bestRank = results[0].rank;
+    return results.filter((r) => r.rank === bestRank);
+  }
 
-  res.json({ winner, allHands: results });
+  const winners = findWinner(results);
+  const isTie = winners.length > 1;
+  let winner = null;
+  if (!isTie) {
+    winner = winners[0];
+  }
+  res.json({ winner, winners, allHands: results, isTie });
 });
 
 // Get current deck from db
