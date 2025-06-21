@@ -2,8 +2,11 @@ function getCard(cardCode){
     const [valueCode, suitCode] = cardCode.split('');
 
     const valueMap = {
-        't' : '10', 'j' : 'J', 'q' : 'Q',
-        'k' : 'K', 'a' : 'A'
+        't' : '10', 
+        'j' : 'J', 
+        'q' : 'Q',
+        'k' : 'K', 
+        'a' : 'A'
     };
 
   const suitMap = {

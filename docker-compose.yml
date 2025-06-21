@@ -1,22 +1,18 @@
-version: "3.8"
+version: '3'
 
 services:
-  client:
-    build: ./client
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+  backend:
+    build: ./server
     ports:
-      - "5173:5173"
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
     environment:
       - NODE_ENV=development
 
-  server:
-    build: ./server
-    volumes:
-      - ./server:/app
-      - /app/node_modules
+  frontend:
+    build: ./client 
     ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=development
+      - "3000:80"
+    depends_on:
+      - backend

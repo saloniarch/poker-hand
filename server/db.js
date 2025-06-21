@@ -1,26 +1,42 @@
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require("sqlite3").verbose();
 
-const db = new sqlite3.Database(('./poker.db'), (err) => {
-    if (err) {
-        console.error('Connecting to database error:', err.message);
-    } else {
-        console.log('Connected to Poker Database.');
-    }
+const db = new sqlite3.Database("./poker.db", (err) => {
+  if (err) {
+    console.error("Connecting to database error:", err.message);
+  } else {
+    console.log("Connected to Poker Database.");
+  }
 });
 
 db.serialize(() => {
-db.run(`
-    CREATE TABLE IF NOT EXISTS hands (
+  // deck
+  //  row |   id   | card
+  //  1   |   1   |   2h
+  //  2   |   2   |   3h
+  //  3   |   3   |   4h
+
+  // hand
+  //  row |   cardId  |   cards   |   handId
+  //  1   |   1       |   2h      |   1
+  //  2   |   2       |   3h      |   1
+  //  3   |   3       |   4h
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS deck (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cards TEXT NOT NULL,
-    category TECT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    card TEXT NOT NULL UNIQUE
     )
-    `, (err) => {
-        if (err) {
-            console.error('Error creating hands table:', err.message);
-        }
-    });
+`);
+
+  // bruke card_Id som foreign key?
+  // Og (card_Id + hand_Id) som composite primary key
+  db.exec(`    
+    CREATE TABLE IF NOT EXISTS hands (
+    hand_id INTEGER NOT NULL,
+    cards TEXT NOT NULL,
+    category TEXT NOT NULL
+    )
+    `);
 });
 
 module.exports = db;
