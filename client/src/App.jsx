@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card from './Components/Card';
 import './App.css';
 import { api } from './api';
@@ -7,20 +7,38 @@ import { HandDisplay } from './Components/Hand';
 
 function App() {
 
-  const { dealNewHand, resetDeck, getWinner} = api();
+  const { dealNewHand, resetDeck, getWinner, getHistory} = api();
 
+  const [firstRound, setFirstRound] = useState(true);
 
   const [currentHandData, setCurrentHandData] = useState(null);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [winnerResult, setWinnerResult] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [firstRound, setFirstRound] = useState(true);
+  
+  const fetchHistory = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getHistory();
+      if (data.error) {
+        setError(data.error.message || "Error fetching history");
+      } else {
+        setHistory(data);
+      } 
+      } catch {
+        setError("Error fetching history.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const [handsToCompare, setHandsToCompare] = useState([]);
-  const [winnerResult, setWinnerResult] = useState(null);
-
+    useEffect(() => {
+      fetchHistory();
+    }, []);
 
   const fetchNewHand = async () => {
     setIsLoading(true);
@@ -29,14 +47,13 @@ function App() {
 
     try {
       const response = await dealNewHand();
-      console.log("Api response.....", response);
+      console.log("Api response: ", response);
 
       if (response?.error) {
         setError(response.error);
       } else if (response) {
         setCurrentHandData({hand: response.hand, analysis: response.analysis});
-        setHandsToCompare(prev => [...prev, response.hand]);
-        setHistory(prev => [response, ...prev.slice(0, 9)]);
+        await fetchHistory();
         setFirstRound(false);
       }
     } catch (error) {
@@ -47,15 +64,18 @@ function App() {
 };
 
 const compareHands = async () => {
-  if (handsToCompare.length < 2) {
+  if (history.length < 2) {
     setError("At least two hands for comparison");
     return;
   }
   setIsLoading(true);
   setError(null);
   setWinnerResult(null);
+
   try{
-    const response = await getWinner(handsToCompare);
+    const hands = history.map(h => h.hand);
+
+    const response = await getWinner(hands);
     if (response?.error) {
       setError(response.error);
     } else {
@@ -67,16 +87,18 @@ const compareHands = async () => {
 
   const resetGame = async () => {
     setIsLoading(true);
+  try {
     await resetDeck();
     setCurrentHandData(null);
     setHistory([]);
-    setHandsToCompare([]);
     setWinnerResult(null);
     setShowHistory(false);
     setFirstRound(true);
     setIsLoading(false);
+  } catch (error) {
+    setError("Failed to reset game");
+  }
   };
-
 
   return (
     <>
@@ -86,7 +108,7 @@ const compareHands = async () => {
           {isLoading ? "Dealing..." : firstRound ? "Start Game" : "Deal New Hand"}
       </button>
         
-        <button onClick={compareHands} disabled={handsToCompare.length < 2 || isLoading}>
+        <button onClick={compareHands} disabled={history.length < 2 || isLoading}>
           Compare Hands
         </button>
 
@@ -133,7 +155,7 @@ const compareHands = async () => {
           <h3>Recent Hands:</h3>
           {history.map(hand => (
             <div key={`history-${hand.id}`} className='history-hand'>
-              {hand.hand.map((card, j) => (
+              {hand.hand.map((card) => (
                 <Card key={`${hand.id}-${card}`} cardCode={card} small />
               ))}
               <span>{hand.analysis.label}</span>

@@ -32,9 +32,11 @@ db.serialize(() => {
   // Og (card_Id + hand_Id) som composite primary key
   db.exec(`    
     CREATE TABLE IF NOT EXISTS hands (
-    hand_id INTEGER NOT NULL,
-    cards TEXT NOT NULL,
-    category TEXT NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hand TEXT NOT NULL,
+    analysis TEXT NOT NULL,
+    remainingDeckCount INTEGER,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     `);
 });
