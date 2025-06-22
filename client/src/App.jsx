@@ -28,6 +28,9 @@ function App() {
         setError(data.error.message || "Error fetching history");
       } else {
         setHistory(data);
+        if (data.length > 0) {
+          setFirstRound(false);
+        }
       } 
       } catch {
         setError("Error fetching history.");
