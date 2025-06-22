@@ -70,10 +70,11 @@ app.get("/api/history", (req, res) => {
 app.post("/api/compare", (req, res) => {
   const { hands } = req.body;
 
-  const results = hands.map((hand) => {
-    const analysis = analyzeHand(hand);
-    return { hand, analysis: analysis.label, rank: analysis.rank };
-  });
+  const results = hands.map(({ hand, analysis, rank }) => ({
+    hand,
+    analysis,
+    rank,
+  }));
 
   function findWinner(results) {
     results.sort((a, b) => a.rank - b.rank);

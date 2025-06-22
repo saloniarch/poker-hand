@@ -73,7 +73,11 @@ const compareHands = async () => {
   setWinnerResult(null);
 
   try{
-    const hands = history.map(h => h.hand);
+    const hands = history.map(h => ({
+      hand: h.hand,
+      analysis: h.analysis.label,
+      rank: h.analysis.rank
+    }));
 
     const response = await getWinner(hands);
     if (response?.error) {
