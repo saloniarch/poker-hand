@@ -17,6 +17,7 @@ En fullstack-applikasjon for å simulere utdeling av pokerhender, analysere dem 
 
 ```bash
 docker-compose up --build --no-cache
+docker compose up
 ```
 
 Kjører på http://localhost:3001

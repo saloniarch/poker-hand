@@ -11,7 +11,7 @@ import { History } from "./Components/History";
 
 function App() {
 
-  const { getNewHand, postResetDeck, getWinner, getHistory} = useApi();
+  const { getNewHand, postResetDeck, postWinner, getHistory} = useApi();
 
   const [firstRound, setFirstRound] = useState(true);
   const [currentHandData, setCurrentHandData] = useState(null);
@@ -90,7 +90,7 @@ const compareHands = async () => {
       rank: h.analysis.rank
     }));
 
-    const response = await getWinner(hands);
+    const response = await postWinner(hands);
     if (response?.error) {
       setError(response.error);
     } else {

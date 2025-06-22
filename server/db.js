@@ -21,7 +21,6 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     hand TEXT NOT NULL,
     analysis TEXT NOT NULL,
-    remainingDeckCount INTEGER,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     `);

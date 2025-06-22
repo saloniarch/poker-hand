@@ -32,6 +32,6 @@ import axios from 'axios';
     getHistory: () => get("/api/history"),
     getDeck: () => get("/deck"),
     postResetDeck: () => post("/deck/reset"),
-    getWinner: (hands) => post("/api/compare", {hands})
+    postWinner: (hands) => post("/api/compare", {hands})
    };
 };

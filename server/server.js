@@ -13,18 +13,17 @@ const PORT = 3001;
 
 // Create hand and return it + analysis
 app.get("/api/hand/new", async (req, res) => {
-  const { hand, remainingDeck } = await dealHand();
+  const { hand } = await dealHand();
   const analysis = analyzeHand(hand);
 
   const handLog = {
     hand: JSON.stringify(hand),
     analysis: JSON.stringify(analysis),
-    remainingDeckCount: remainingDeck.length,
   };
 
   db.run(
-    `INSERT INTO hands (hand, analysis, remainingDeckCount) VALUES (?, ?, ?)`,
-    [handLog.hand, handLog.analysis, handLog.remainingDeckCount],
+    `INSERT INTO hands (hand, analysis) VALUES (?, ?)`,
+    [handLog.hand, handLog.analysis],
     function (err) {
       if (err) {
         console.error(
@@ -47,7 +46,7 @@ app.get("/api/hand/new", async (req, res) => {
 // return 10 most recent hands
 app.get("/api/history", (req, res) => {
   db.all(
-    `SELECT id, hand, analysis, remainingDeckCount, timestamp
+    `SELECT id, hand, analysis, timestamp
     FROM hands
     ORDER BY timestamp DESC
     LIMIT 10`,

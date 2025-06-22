@@ -80,14 +80,7 @@ async function dealHand() {
     });
   });
 
-  const remainingDeck = await new Promise((resolve, reject) => {
-    db.all("SELECT card FROM deck", [], (err, rows) => {
-      if (err) return reject(err);
-      else resolve(rows.map((row) => row.card));
-    });
-  });
-
-  return { hand, remainingDeck };
+  return { hand };
 }
 
 module.exports = { createDeck, resetGame, dealHand };
