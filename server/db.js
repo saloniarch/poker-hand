@@ -9,18 +9,6 @@ const db = new sqlite3.Database("./poker.db", (err) => {
 });
 
 db.serialize(() => {
-  // deck
-  //  row |   id   | card
-  //  1   |   1   |   2h
-  //  2   |   2   |   3h
-  //  3   |   3   |   4h
-
-  // hand
-  //  row |   cardId  |   cards   |   handId
-  //  1   |   1       |   2h      |   1
-  //  2   |   2       |   3h      |   1
-  //  3   |   3       |   4h
-
   db.exec(`
     CREATE TABLE IF NOT EXISTS deck (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,8 +16,6 @@ db.serialize(() => {
     )
 `);
 
-  // bruke card_Id som foreign key?
-  // Og (card_Id + hand_Id) som composite primary key
   db.exec(`    
     CREATE TABLE IF NOT EXISTS hands (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

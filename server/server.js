@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 
-const { dealHand, resetDeck } = require("./DeckUtils");
+const { dealHand, resetGame } = require("./DeckUtils");
 const { analyzeHand } = require("./RankingUtils");
 
 const app = express();
@@ -67,14 +67,22 @@ app.get("/api/history", (req, res) => {
   );
 });
 
+// Decide which hand is the winner or tie
 app.post("/api/compare", (req, res) => {
   const { hands } = req.body;
 
-  const results = hands.map(({ hand, analysis, rank }) => ({
-    hand,
-    analysis,
-    rank,
-  }));
+  if (!hands || hands.length < 2) {
+    return res.status(400).json({ error: "Need at least two hands" });
+  }
+
+  const results = hands.map(({ hand }) => {
+    const analysis = analyzeHand(hand);
+    return {
+      hand,
+      analysis: analysis.label,
+      rank: analysis.rank,
+    };
+  });
 
   function findWinner(results) {
     results.sort((a, b) => a.rank - b.rank);
@@ -104,16 +112,8 @@ app.get("/deck", (req, res) => {
 
 // Reset deck
 app.post("/deck/reset", async (req, res) => {
-  const newDeck = await resetDeck();
-
-  db.run("DELETE FROM hands", (err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "Failed to reset properly by clearing history log" });
-    }
-    res.json({ message: "Deck reset", cards: newDeck });
-  });
+  const newDeck = await resetGame();
+  res.json({ message: "Game reset", cards: newDeck });
 });
 
 app.listen(PORT, () => {

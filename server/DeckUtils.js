@@ -30,7 +30,7 @@ function createDeck() {
   return deck; // I have to shuffle in database
 }
 
-function resetDeck() {
+function resetGame() {
   return new Promise((resolve, reject) => {
     const newDeck = createDeck();
 
@@ -40,8 +40,12 @@ function resetDeck() {
 
         const insertCard = db.prepare("INSERT INTO deck (card) VALUES (?)");
         newDeck.forEach((card) => insertCard.run(card));
-        insertCard.finalize((finalizeError) => {
-          if (finalizeError) return reject(finalizeError);
+        insertCard.finalize((insertError) => {
+          if (insertError) return reject(insertError);
+
+          db.run("DELETE FROM hands", (handsErr) => {
+            if (handsErr) return reject(handsErr);
+          });
           resolve(newDeck);
         });
       });
@@ -60,7 +64,7 @@ async function dealHand() {
 
   // create new one if deck doesn't exist / ran out of cards
   if (!handFromDB || handFromDB.length < 5) {
-    await resetDeck();
+    await resetGame();
     return dealHand();
   }
 
@@ -86,4 +90,4 @@ async function dealHand() {
   return { hand, remainingDeck };
 }
 
-module.exports = { createDeck, resetDeck, dealHand };
+module.exports = { createDeck, resetGame, dealHand };

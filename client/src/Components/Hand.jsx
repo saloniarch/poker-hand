@@ -1,4 +1,3 @@
-// HandDisplay.jsx
 import Card from './Card';
 
 export function HandDisplay({ hand, small }) {
