@@ -2,7 +2,7 @@ import axios from 'axios';
 
     const API_URL = import.meta.env.VITE_API_URL;
 
-    export const api = () => {
+    export const useApi = () => {
         const get = async (endpoint) => {
             try {
                 const response = await axios.get(`${API_URL}${endpoint}`);
@@ -28,10 +28,10 @@ import axios from 'axios';
         };
         
    return {
-    dealNewHand: () => get("/api/hand/new"),
+    getNewHand: () => get("/api/hand/new"),
     getHistory: () => get("/api/history"),
     getDeck: () => get("/deck"),
-    resetDeck: () => post("/deck/reset"),
+    postResetDeck: () => post("/deck/reset"),
     getWinner: (hands) => post("/api/compare", {hands})
    };
 };

@@ -1,9 +1,9 @@
-import { api } from "../api";
+import { useApi } from "../useApi";
 import { useState } from "react";
 
 export function Deck({}) {
 
-  const {getDeck} = api();
+  const {getDeck} = useApi();
   const [remainingCards, setRemaining] = useState(null);
 
   const handleGetDeck = async () => {

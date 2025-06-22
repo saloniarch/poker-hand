@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { api } from './api';
+import { useApi } from './useApi';
 
 import { Deck } from "./Components/Deck";
 import { Controls } from "./Components/Controls";
@@ -11,7 +11,7 @@ import { History } from "./Components/History";
 
 function App() {
 
-  const { dealNewHand, resetDeck, getWinner, getHistory} = api();
+  const { getNewHand, postResetDeck, getWinner, getHistory} = useApi();
 
   const [firstRound, setFirstRound] = useState(true);
   const [currentHandData, setCurrentHandData] = useState(null);
@@ -52,15 +52,15 @@ function App() {
     setWinnerResult(null);
 
     try {
-      const response = await dealNewHand();
+      const response = await getNewHand();
       console.log("Api response: ", response);
 
       if (response?.error) {
         setError(response.error);
       } else {
         setCurrentHandData({
-          hand: response.hand, 
-          analysis: response.analysis
+          hand: response?.hand, 
+          analysis: response?.analysis
         });
         await fetchHistory();
         setFirstRound(false);
@@ -103,7 +103,7 @@ const compareHands = async () => {
   const resetGame = async () => {
     setIsLoading(true);
   try {
-    await resetDeck();
+    await postResetDeck();
     setCurrentHandData(null);
     setHistory([]);
     setWinnerResult(null);
