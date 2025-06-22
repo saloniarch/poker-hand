@@ -2,17 +2,19 @@ version: '3'
 
 services:
   backend:
-    build: ./server
+    image: saloniarch/poker-hand-backend:v1
+    build:
+        context: ./server
+    platform: linux/amd64
     ports:
       - "3002:3001"
-    volumes:
-      - ./server:/app:cached
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
+
 
   frontend:
-    build: ./client
+    image: saloniarch/poker-hand-frontend:v1
+    build: 
+      context: ./client
+    platform: linux/amd64
     ports:
       - "3001:80"
     depends_on:
